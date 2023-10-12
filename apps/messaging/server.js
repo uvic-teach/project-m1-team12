@@ -2,7 +2,7 @@ const Ably = require('ably');
 const ably = new Ably.Realtime('Zq2E3w.pv_Uog:ddShQDXgQsFi1NvKCpjFcbXxZw0zdgvYdDCGNjCuxnU');
 const express = require('express');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 8080;
 
 app.get('/', (req, res) => {
     res.send('Hello, World!');
@@ -24,7 +24,7 @@ app.get('/subscribe', (req, res) => {
 });
 
 
-app.listen(PORT, () => {
+app.listen(8080, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
 
