@@ -1,5 +1,9 @@
+'use client'
+
 import Link from "@mui/material/Link";
 import loadCustomRoutes from "next/dist/lib/load-custom-routes";
+import { useState } from "react";
+import { ExampleFetch } from "../components/ExampleFetch";
 
 const mockContacts = [
     {
@@ -42,6 +46,7 @@ type ContactProps = {
 }
 
 export default function Messaging() {
+    const [modalVisible, setModalVisible] = useState<boolean>(true)
     
     return (
         <div className="w-screen min-h-screen p-8 bg-orange-100 flex flex-col justify-start gap-8">
@@ -51,6 +56,16 @@ export default function Messaging() {
                     return <Contact key={contact.name} {...contact} />
                 })}
             </div>
+            {
+                modalVisible && (
+                    <div className="fixed top-0 left-0 w-screen h-screen bg-black bg-opacity-50 flex justify-center items-center">
+                        <div className="w-1/2 h-1/2 bg-white rounded-lg flex flex-col justify-center items-center gap-4">
+                            <ExampleFetch url="https://messaging-microservice.fly.dev" />
+                            <button onClick={() => setModalVisible(false)} className="bg-blue-500 rounded text-white py-2 px-4 font-bold">Close</button>
+                        </div>
+                    </div>
+                )
+            }
         </div>
     )
 }

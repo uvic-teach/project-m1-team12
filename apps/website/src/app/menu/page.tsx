@@ -1,5 +1,10 @@
+'use client'
+import { ExampleFetch } from "../components/ExampleFetch";
+
 export default function Menu() {
     return (
-        <p>Hello World</p>
+        <div className="w-screen min-h-screen text-xl flex flex-col items-center justify-center gap-8">
+            <ExampleFetch url="https://resident-management.fly.dev" />
+        </div>
     )
 }
