@@ -14,7 +14,9 @@
     "@fontsource/roboto": "^5.0.8",
     "@mui/icons-material": "^5.14.11",
     "@mui/material": "^5.14.11",
+    "iron-session": "^6.3.1",
     "next": "latest",
+    "next-auth": "^4.24.3",
     "react": "latest",
     "react-dom": "latest"
   },
