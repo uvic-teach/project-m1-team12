@@ -6,9 +6,10 @@ import Ably from 'ably';
 import db from './db';
 import { Message, Subscription, PresenceData } from './types';
 import cors from 'cors';
+import dotenv from 'dotenv';
+dotenv.config();
 
-
-const ably = new Ably.Realtime('Zq2E3w.pv_Uog:ddShQDXgQsFi1NvKCpjFcbXxZw0zdgvYdDCGNjCuxnU');
+const ably = new Ably.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const app = express();
 app.use(cors());
 const PORT =  parseInt(process.env.PORT || "8080");
@@ -53,11 +54,11 @@ app.post('/subscribe', (req: Request, res: Response) => {
 
 // TODO !TM - implement unsubscribe
 app.post('/unsubscribe', (req: Request, res: Response) => {
-    const { channel: channelName, subscriptionId } = req.body;
-    const channel = ably.channels.get(channelName);
-  
-    channel.unsubscribe(subscriptionId);
-    res.send('Unsubscribed!');
+    // This is an untested guess at what it might look like
+    // const { channel: channelName, subscriptionId } = req.body;
+    // const channel = ably.channels.get(channelName);
+    // channel.unsubscribe(subscriptionId);
+    // res.send('Unsubscribed!');
 });
 
 app.post('/create-or-get-channel', async (req: Request, res: Response) => {
@@ -104,17 +105,18 @@ app.get('/history/:channel', async (req: Request, res: Response) => {
 
 // TODO !TM - implement presence
 app.get('/presence/:channel', async (req: Request, res: Response) => {
-    const { channel: channelName } = req.params;
-    const channel = ably.channels.get(channelName);
+    // This is an untested guess at what it might look like
+    // const { channel: channelName } = req.params;
+    // const channel = ably.channels.get(channelName);
   
-    channel.presence.get((err, presenceSet) => {
-        if (err) {
-            console.error('Presence retrieval failed:', err.message);
-            return res.sendStatus(500);
-        }
+    // channel.presence.get((err, presenceSet) => {
+    //     if (err) {
+    //         console.error('Presence retrieval failed:', err.message);
+    //         return res.sendStatus(500);
+    //     }
     
-        res.json(presenceSet);
-    });
+    //     res.json(presenceSet);
+    // });
 });
 
 app.listen(PORT, '0.0.0.0', () => {

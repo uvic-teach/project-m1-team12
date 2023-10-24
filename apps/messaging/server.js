@@ -18,7 +18,9 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const ably_1 = __importDefault(require("ably"));
 const db_1 = __importDefault(require("./db"));
 const cors_1 = __importDefault(require("cors"));
-const ably = new ably_1.default.Realtime('Zq2E3w.pv_Uog:ddShQDXgQsFi1NvKCpjFcbXxZw0zdgvYdDCGNjCuxnU');
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const ably = new ably_1.default.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 const PORT = parseInt(process.env.PORT || "8080");
@@ -32,8 +34,8 @@ app.post('/publish', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.sendStatus(500);
         }
         message.timestamp = Date.now();
-        const text = 'INSERT INTO messages (name, data, client_id, connection_id, timestamp, extras, encoding) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
-        const values = [message.name, message.data, message.clientId, message.connectionId, message.timestamp, JSON.stringify(message.extras), message.encoding];
+        const text = 'INSERT INTO messages (name, data, channel, client_id, connection_id, timestamp, extras, encoding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
+        const values = [message.name, message.data, channelName, message.clientId, message.connectionId, message.timestamp, JSON.stringify(message.extras), message.encoding];
         try {
             const result = yield db_1.default.query(text, values);
             res.json(result.rows[0]);
@@ -54,10 +56,11 @@ app.post('/subscribe', (req, res) => {
 });
 // TODO !TM - implement unsubscribe
 app.post('/unsubscribe', (req, res) => {
-    const { channel: channelName, subscriptionId } = req.body;
-    const channel = ably.channels.get(channelName);
-    channel.unsubscribe(subscriptionId);
-    res.send('Unsubscribed!');
+    // This is an untested guess at what it might look like
+    // const { channel: channelName, subscriptionId } = req.body;
+    // const channel = ably.channels.get(channelName);
+    // channel.unsubscribe(subscriptionId);
+    // res.send('Unsubscribed!');
 });
 app.post('/create-or-get-channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { user1, user2 } = req.body;
@@ -99,15 +102,16 @@ app.get('/history/:channel', (req, res) => __awaiter(void 0, void 0, void 0, fun
 }));
 // TODO !TM - implement presence
 app.get('/presence/:channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { channel: channelName } = req.params;
-    const channel = ably.channels.get(channelName);
-    channel.presence.get((err, presenceSet) => {
-        if (err) {
-            console.error('Presence retrieval failed:', err.message);
-            return res.sendStatus(500);
-        }
-        res.json(presenceSet);
-    });
+    // This is an untested guess at what it might look like
+    // const { channel: channelName } = req.params;
+    // const channel = ably.channels.get(channelName);
+    // channel.presence.get((err, presenceSet) => {
+    //     if (err) {
+    //         console.error('Presence retrieval failed:', err.message);
+    //         return res.sendStatus(500);
+    //     }
+    //     res.json(presenceSet);
+    // });
 }));
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}`);
