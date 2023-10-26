@@ -1,5 +1,3 @@
-// types.ts
-
 interface Message {
     name?: string;
     data: string;

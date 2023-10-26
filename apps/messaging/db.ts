@@ -4,8 +4,8 @@ dotenv.config();
 
 const pool = new Pool({
     user: 'postgres',
-    host: 'localhost',
-    database: 'messaging',
+    host: 'https://messaging-db.fly.dev',
+    database: 'messaging-db',
     password: process.env.DB_PASSWORD,
     port: 5432,
 });

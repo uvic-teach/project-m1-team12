@@ -8,8 +8,8 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const pool = new pg_1.Pool({
     user: 'postgres',
-    host: 'localhost',
-    database: 'messaging',
+    host: 'https://messaging-db.fly.dev',
+    database: 'messaging-db',
     password: process.env.DB_PASSWORD,
     port: 5432,
 });

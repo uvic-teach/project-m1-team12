@@ -1,5 +1,4 @@
 "use strict";
-// server.ts
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -16,17 +15,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const body_parser_1 = __importDefault(require("body-parser"));
 const ably_1 = __importDefault(require("ably"));
-const db_1 = __importDefault(require("./db"));
+const supabase_js_1 = require("@supabase/supabase-js");
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
 const ably = new ably_1.default.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const app = (0, express_1.default)();
-app.use((0, cors_1.default)());
 const PORT = parseInt(process.env.PORT || "8080");
+const supabaseUrl = 'https://vtcuspkqczxhqqptkxbl.supabase.co';
+const supabaseKey = process.env.API_KEY || 'API_KEY';
+const supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
+app.use((0, cors_1.default)());
 app.use(body_parser_1.default.json());
+dotenv_1.default.config();
 app.post('/publish', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { channel: channelName, message } = req.body;
+    if (!channelName || !message) {
+        return res.sendStatus(400);
+    }
+    // TODO !TM - implement safety check on the message fields
+    // Note that not all the fields are required
     const channel = ably.channels.get(channelName);
     channel.publish(message.name || '', message.data, (err) => __awaiter(void 0, void 0, void 0, function* () {
         if (err) {
@@ -34,11 +41,22 @@ app.post('/publish', (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return res.sendStatus(500);
         }
         message.timestamp = Date.now();
-        const text = 'INSERT INTO messages (name, data, channel, client_id, connection_id, timestamp, extras, encoding) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
-        const values = [message.name, message.data, channelName, message.clientId, message.connectionId, message.timestamp, JSON.stringify(message.extras), message.encoding];
         try {
-            const result = yield db_1.default.query(text, values);
-            res.json(result.rows[0]);
+            const { data, error } = yield supabase
+                .from('messages')
+                .insert([{
+                    name: message.name,
+                    data: message.data,
+                    channel: channelName,
+                    client_id: message.clientId,
+                    connection_id: message.connectionId,
+                    timestamp: message.timestamp,
+                    extras: message.extras,
+                    encoding: message.encoding
+                }]);
+            if (error)
+                throw error;
+            res.json(data && data[0]);
         }
         catch (dbErr) {
             console.error(dbErr);
@@ -48,6 +66,9 @@ app.post('/publish', (req, res) => __awaiter(void 0, void 0, void 0, function* (
 }));
 app.post('/subscribe', (req, res) => {
     const { channel: channelName } = req.body;
+    if (!channelName) {
+        return res.sendStatus(400);
+    }
     const channel = ably.channels.get(channelName);
     const subscription = channel.subscribe('message', (message) => {
         console.log(message.data);
@@ -64,22 +85,26 @@ app.post('/unsubscribe', (req, res) => {
 });
 app.post('/create-or-get-channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { user1, user2 } = req.body;
+    if (!user1 || !user2) {
+        return res.sendStatus(400);
+    }
     const channelName = [user1, user2].sort().join('-'); // Ensures the channel name is consistent regardless of the order of users
-    const checkChannelText = 'SELECT * FROM channels WHERE name = $1';
     try {
-        const existingChannel = yield db_1.default.query(checkChannelText, [channelName]);
-        if (existingChannel.rows.length > 0) {
-            return res.json(existingChannel.rows[0]); // Return the existing channel if found
+        let { data, error } = yield supabase
+            .from('channels')
+            .select('*')
+            .eq('name', channelName);
+        if (error)
+            throw error;
+        if (data && data.length > 0) {
+            return res.json(data[0]); // Return the existing channel if found
         }
-    }
-    catch (dbErr) {
-        console.error(dbErr);
-        return res.sendStatus(500);
-    }
-    const createChannelText = 'INSERT INTO channels (name) VALUES ($1) RETURNING *';
-    try {
-        const result = yield db_1.default.query(createChannelText, [channelName]);
-        res.json(result.rows[0]); // Create and return the new channel if not found
+        ({ data, error } = yield supabase
+            .from('channels')
+            .insert([{ name: channelName }]));
+        if (error)
+            throw error;
+        res.json(data && data[0]); // Create and return the new channel if not found
     }
     catch (dbErr) {
         console.error(dbErr);
@@ -88,12 +113,20 @@ app.post('/create-or-get-channel', (req, res) => __awaiter(void 0, void 0, void 
 }));
 app.get('/history/:channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { channel } = req.params;
+    if (!channel) {
+        return res.sendStatus(400);
+    }
     const limit = req.query.limit || 10;
-    const text = 'SELECT * FROM messages WHERE channel = $1 ORDER BY timestamp DESC LIMIT $2';
-    const values = [channel, limit];
     try {
-        const result = yield db_1.default.query(text, values);
-        res.json(result.rows);
+        const { data, error } = yield supabase
+            .from('messages')
+            .select('*')
+            .eq('channel', channel)
+            .order('timestamp', { ascending: false })
+            .limit(Number(limit));
+        if (error)
+            throw error;
+        res.json(data);
     }
     catch (err) {
         console.error(err);
