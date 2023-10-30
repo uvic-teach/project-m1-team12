@@ -6,7 +6,6 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Adds an event to the database
-// Currently only this one works :/
 export async function addEvent(eventData: AddEventsInterface) {
     try {
         const { data, error } = await supabase
@@ -40,6 +39,7 @@ export async function deleteEvent(event: EventsInterface): Promise<void> {
   }
 }
 
+// THIS ONE DOES NOT WORK
 export async function getDayEvents(day: string): Promise<EventsInterface[]> {
   try {
       const { data, error } = await supabase
