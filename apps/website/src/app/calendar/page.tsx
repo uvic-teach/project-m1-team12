@@ -5,9 +5,13 @@ import { useState } from "react";
 import { Button, TextField, FormControl, FormControlLabel, Checkbox, InputLabel } from '@mui/material';
 import Box from "@mui/material/Box";
 
+function formatDate(input: string): string {
+    const date = new Date(input);
+    return date.toISOString().split('.')[0] + 'Z';
+}
+
 function EventForm() {
     const [eventName, setEventName] = useState('');
-    const [day, setDay] = useState('');
     const [startDateTime, setStartDateTime] = useState('');
     const [endDateTime, setEndDateTime] = useState('');
     const [isMealtime, setIsMealtime] = useState(false);
@@ -15,16 +19,17 @@ function EventForm() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
+        const formattedStartDateTime = formatDate(startDateTime);
+        const formattedEndDateTime = formatDate(endDateTime);
+
         console.log({
-            eventName,
-            day,
-            startDateTime,
-            endDateTime,
-            isMealtime
+            event_name: eventName,
+            start_date_time: formattedStartDateTime,
+            end_date_time: formattedEndDateTime,
+            is_meal_event: isMealtime
         });
 
         setEventName('');
-        setDay('');
         setStartDateTime('');
         setEndDateTime('');
         setIsMealtime(false);
@@ -36,15 +41,6 @@ function EventForm() {
                 <FormControl fullWidth margin="normal">
                     <InputLabel shrink>Event Name</InputLabel>
                     <TextField value={eventName} onChange={(e) => setEventName(e.target.value)} />
-                </FormControl>
-                <FormControl fullWidth margin="normal">
-                    <InputLabel shrink>Day</InputLabel>
-                    <TextField
-                        type="date"
-                        value={day}
-                        onChange={(e) => setDay(e.target.value)}
-                        InputProps={{ inputProps: { placeholder: '' } }}
-                    />
                 </FormControl>
                 <FormControl fullWidth margin="normal">
                     <InputLabel shrink>Start Date & Time</InputLabel>
