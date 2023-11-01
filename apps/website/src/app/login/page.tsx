@@ -12,7 +12,7 @@ export default function Registration() {
     async function login(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
 
-		const response = await fetch('http://localhost:8082/user/login', {
+		const response = await fetch('https://resident-management.fly.dev/user/login', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export default function Registration() {
 					placeholder="Password"
 				/>
 				<br />
-				<input type="submit" value="Register" />
+				<input type="submit" value="Login" />
         </form>
     )
 }
