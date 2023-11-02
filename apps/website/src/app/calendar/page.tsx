@@ -29,6 +29,12 @@ function EventForm() {
         const formattedStartDateTime = formatDate(startDateTime);
         const formattedEndDateTime = formatDate(endDateTime);
 
+        // Check if start date is after the end date
+        if (new Date(formattedStartDateTime) > new Date(formattedEndDateTime)) {
+            setErrorMessage('Start date must be before end date');
+            return;
+        }
+
         console.log({
             event_name: eventName,
             start_date_time: formattedStartDateTime,
