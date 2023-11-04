@@ -6,7 +6,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Adds an event to the database
-export async function addEvent(eventData: AddEventsInterface) {
+export async function addEvent(eventData: AddEventsInterface): Promise<void> {
     try {
         const { data, error } = await supabase
             .from('Events')
@@ -126,7 +126,8 @@ export async function modifyEvent(oldEvent: EventsInterface, updatedEvent: Event
     }
 }
 
-async function addSampleEvents() {
+// Just to test the database
+async function addSampleEvents() :Promise<void> {
     const sampleEvent1: AddEventsInterface = {
         event_name: 'Sample Event 1',
         start_date_time: new Date('2023-11-01T10:00:00Z').toISOString(), 
@@ -196,7 +197,7 @@ async function addSampleEvents() {
   }
 
 // Add async to the function to use await
-addSampleEvents().then(async () => {
+addSampleEvents().then(async (): Promise<void> => {
     // Replace with the actual day for which you want to retrieve events
     const dayToRetrieve: string = '2023-11-01'; // Replace with your desired date
     const monthToRetrieve: string = '2023-12'; // Replace with your desired date
