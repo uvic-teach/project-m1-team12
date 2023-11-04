@@ -21,17 +21,29 @@ function EventForm() {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        if (!eventName || !startDateTime || !endDateTime) {
-            setErrorMessage('All fields (event name, start date & time, and end date & time) need to be filled before submitting an event.');
+        let missingFields = [];
+
+        if (!eventName) missingFields.push("event name");
+        if (!startDateTime) missingFields.push("start date & time");
+        if (!endDateTime) missingFields.push("end date & time");
+
+        if (missingFields.length) {
+            setErrorMessage(`Please fill the following fields: ${missingFields.join(", ")}.`);
             return;
         }
 
         const formattedStartDateTime = formatDate(startDateTime);
         const formattedEndDateTime = formatDate(endDateTime);
 
+        // Check if start date is before the current date
+        if (new Date(formattedStartDateTime) < new Date()) {
+            setErrorMessage('Start date & time must be after the current date & time');
+            return;
+        }
+
         // Check if start date is after the end date
         if (new Date(formattedStartDateTime) > new Date(formattedEndDateTime)) {
-            setErrorMessage('Start date must be before end date');
+            setErrorMessage('Start date & time must be before end date & time');
             return;
         }
 
