@@ -7,12 +7,14 @@ export default function Registration() {
     const [name, setName] = useState('')
 	const [email, setEmail] = useState('')
 	const [password, setPassword] = useState('')
+	const [usertype, setUsertype] = useState('')
+
 
 
     async function registerUser(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
 
-		const response = await fetch('https://resident-management.fly.dev/user/register', {
+		const response = await fetch('http://localhost:8082/user/register', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -21,13 +23,18 @@ export default function Registration() {
 				name,
 				email,
 				password,
+				usertype
 			}),
 		})
 
 		const data = await response.json()
 
 		if (data.status === 'ok') {
+			alert('user created successfully')
 			console.log(data)
+			
+		}else{
+			alert('User creation unsuccessful. Name or Email already exists')
 		}
 	}
 
@@ -53,6 +60,13 @@ export default function Registration() {
 					type="password"
 					placeholder="Password"
 				/>
+				<br />
+				<label >Select User type</label>
+				<select value={usertype} onChange={(e) => setUsertype(e.target.value)}>
+					<option value="Resident">Resident</option>
+					<option value="Admin">Admin</option>
+				</select>
+				
 				<br />
 				<input type="submit" value="Register" />
         </form>
