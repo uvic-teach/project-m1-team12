@@ -14,12 +14,14 @@ mongoose.connect(process.env.CONN_STRING);
 app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
+
 app.post('/user/register', async (req, res) => {
     try{
         const user = await User.create({
             name: req.body.name, 
             email: req.body.email, 
             password: req.body.password,
+            usertype: req.body.usertype,
         })
         res.json({status: 'ok', user: user})
     }catch(err){
@@ -35,15 +37,19 @@ app.post('/user/login', async (req, res) => {
             password: req.body.password,
         })
         if(user){
-            return res.json({status: 'ok', user: true})
+            return res.json({status: 'ok', user: true, name: user.name})
         }else{
-        res.json({status: 'error', user:'false'})
+        res.json({status: 'error', user:false})
         }
     }catch(err){
         res.json({status: 'ok', error: err})
     }
     
 })
+
+app.get('/user/getID')
+
+// get name and ID of all residents...
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}`);
