@@ -1,4 +1,4 @@
-export interface Event {
+export type Event = {
   event_id: number;
   event_name: string;
   start_date_time: string;
@@ -6,7 +6,7 @@ export interface Event {
   is_meal_event: boolean;
 }
 
-export interface AddEvent {
+export type AddEvent = {
   event_name: string;
   start_date_time: string;
   end_date_time: string;
