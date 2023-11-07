@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { AddEventsInterface, EventsInterface } from './EventsInterface';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-const supabaseUrl = 'https://igfaeuwzpmjmcbfwstzu.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlnZmFldXd6cG1qbWNiZndzdHp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTgyNzIzOTUsImV4cCI6MjAxMzg0ODM5NX0.mnmXiwnQSlT7XXcT6V4YhsaWmQsj23VwBgcFF9EBxtc';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Adds an event to the database
