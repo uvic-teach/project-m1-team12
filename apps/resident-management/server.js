@@ -11,6 +11,12 @@ app.use(cors());
 app.use(express.json()); 
 mongoose.connect(process.env.CONN_STRING);
 
+app.use(
+    cors({
+      origin: ["http://localhost:3000", process.env.ORIGIN],
+    })
+  );
+
 app.get('/', (req, res) => {
     res.send('Hello, World!');
 });
@@ -47,7 +53,7 @@ app.post('/user/login', async (req, res) => {
     
 })
 
-app.get('/user/getID')
+
 
 // get name and ID of all residents...
 
