@@ -14,7 +14,7 @@ export default function Registration() {
     async function registerUser(event: React.FormEvent<HTMLFormElement>) {
 		event.preventDefault()
 
-		const response = await fetch('http://localhost:8082/user/register', {
+		const response = await fetch('https://resident-management.fly.dev/user/register', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -28,6 +28,7 @@ export default function Registration() {
 		})
 
 		const data = await response.json()
+		console.log('here')
 
 		if (data.status === 'ok') {
 			alert('user created successfully')
