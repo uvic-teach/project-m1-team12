@@ -1,6 +1,5 @@
 'use client'
 
-import { ExampleFetch } from "../components/ExampleFetch";
 import { useState } from "react";
 import { Button, TextField, FormControl, FormControlLabel, Checkbox, InputLabel } from '@mui/material';
 import Box from "@mui/material/Box";
@@ -106,8 +105,6 @@ export default function Calendar() {
             {!showForm && <Button variant="contained" color="primary" onClick={() => setShowForm(!showForm)} style={{ backgroundColor: '#3f51b5', color: '#fff' }}>Add Event</Button>}
 
             {showForm && <EventForm />}
-
-            <ExampleFetch url="https://events-microservice.fly.dev" />
         </div>
     );
 }
