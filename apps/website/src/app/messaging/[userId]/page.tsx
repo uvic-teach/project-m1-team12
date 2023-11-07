@@ -58,6 +58,7 @@ const Messaging = ({ params }: { params: { userId: string } }) => {
             };
 
             createOrGetChannel();
+            handleFetchHistory();
         }
 
     }, [userId]);

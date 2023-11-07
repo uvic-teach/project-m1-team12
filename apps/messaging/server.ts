@@ -24,8 +24,12 @@ app.post('/publish', async (req: Request, res: Response) => {
         return res.sendStatus(400);
     }
 
-    // TODO !TM - implement safety check on the message fields
-    // Note that not all the fields are required
+    // Check Message is well formed
+    if (message?.data == undefined || message?.id == undefined || message?.timestamp == undefined) {
+        console.error('Missing Parameters.');
+        return res.sendStatus(400);
+    }
+
 
     const channel = ably.channels.get(channelName);
 
@@ -76,13 +80,11 @@ app.post('/subscribe', (req: Request, res: Response) => {
     res.json({ status: 200 });
 });
 
-// TODO !TM - implement unsubscribe
 app.post('/unsubscribe', (req: Request, res: Response) => {
-    // This is an untested guess at what it might look like
-    // const { channel: channelName, subscriptionId } = req.body;
-    // const channel = ably.channels.get(channelName);
-    // channel.unsubscribe(subscriptionId);
-    // res.send('Unsubscribed!');
+    const { channel: channelName, subscriptionId } = req.body;
+    const channel = ably.channels.get(channelName);
+    channel.unsubscribe(subscriptionId);
+    res.send('Unsubscribed!');
 });
 
 app.post('/create-or-get-channel', async (req: Request, res: Response) => {
@@ -137,20 +139,24 @@ app.get('/history/:channel', async (req: Request, res: Response) => {
     }
 });
 
-// TODO !TM - implement presence
+
 app.get('/presence/:channel', async (req: Request, res: Response) => {
-    // This is an untested guess at what it might look like
-    // const { channel: channelName } = req.params;
-    // const channel = ably.channels.get(channelName);
-  
-    // channel.presence.get((err, presenceSet) => {
-    //     if (err) {
-    //         console.error('Presence retrieval failed:', err.message);
-    //         return res.sendStatus(500);
-    //     }
-    
-    //     res.json(presenceSet);
-    // });
+    const { channel: channelName } = req.params;
+    const channel = ably.channels.get(channelName);
+    // Attach
+    await channel.attach((err) => {
+        if (err) {
+            return console.error("Error attaching to the channel."); 
+        }
+    });
+    // Enter the presence set
+    await channel.presence.enter("test", (err) => {
+        if (err) {
+            return console.error("Error entering presence set.");
+        }
+        console.log("Entered the presence set.");
+    });
+
 });
 
 app.listen(PORT, '0.0.0.0', () => {
