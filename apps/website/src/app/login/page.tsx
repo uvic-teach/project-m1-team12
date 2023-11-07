@@ -1,0 +1,58 @@
+'use client'
+
+import React, { useState } from 'react' 
+
+
+export default function Registration() {
+    const [name, setName] = useState('')
+	const [email, setEmail] = useState('')
+	const [password, setPassword] = useState('')
+
+
+    async function login(event: React.FormEvent<HTMLFormElement>) {
+		event.preventDefault()
+
+		const response = await fetch('http://localhost:8082/user/login', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				email,
+				password,
+			}),
+		})
+
+		const data = await response.json()
+
+		if (data.user == true) {
+			localStorage.setItem('token', data.name)
+			window.location.href = '/'
+		}else{
+			localStorage.removeItem('token')
+			alert('Login Unsuccessful. Please check your username or password and try again')
+		}
+			console.log(data)
+
+	}
+
+    return (
+        <form className="flex flex-col gap-2 mx-auto max-w-md mt-10 " onSubmit={login}>
+				<input
+					value={email}
+					onChange={(e) => setEmail(e.target.value)}
+					type="email"
+					placeholder="Email"
+				/>
+				<br />
+				<input
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					type="password"
+					placeholder="Password"
+				/>
+				<br />
+				<input type="submit" value="Login" />
+        </form>
+    )
+}
