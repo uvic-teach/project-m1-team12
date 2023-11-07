@@ -1,59 +1,59 @@
 // Old Test file for EventsDatabase.ts
 
-import {AddEventsInterface, EventsInterface} from "./EventsInterface";
+import {AddEvent, Event} from "./EventsInterface";
 import {addEvent, getDayEvents, getMonthEvents, getWeekEvents, modifyEvent} from "./EventsDatabase";
 
 async function addSampleEvents() :Promise<void> {
-    const sampleEvent1: AddEventsInterface = {
+    const sampleEvent1: AddEvent = {
         event_name: 'Sample Event 1',
         start_date_time: '2023-11-01T10:00:00Z',
         end_date_time: '2023-11-01T12:00:00Z',
         is_meal_event: false,
     };
 
-    const sampleEvent2: AddEventsInterface = {
+    const sampleEvent2: AddEvent = {
         event_name: 'Sample Event 2',
         start_date_time: '2023-11-01T14:00:00Z',
         end_date_time: '2023-11-01T16:00:00Z',
         is_meal_event: false,
     };
 
-    const sampleEvent3: AddEventsInterface = {
+    const sampleEvent3: AddEvent = {
         event_name: 'Sample Event 3',
         start_date_time: '2023-12-01T14:00:00Z',
         end_date_time: '2023-12-01T16:00:00Z',
         is_meal_event: false,
     };
 
-    const sampleEvent4: AddEventsInterface = {
+    const sampleEvent4: AddEvent = {
         event_name: 'Sample Event 4',
         start_date_time: '2023-12-01T14:00:00Z',
         end_date_time: '2023-12-01T16:00:00Z',
         is_meal_event: false,
     };
 
-    const sampleEvent5: AddEventsInterface = {
+    const sampleEvent5: AddEvent = {
         event_name: 'Sample Event 5',
         start_date_time: new Date('2024-01-01T10:00:00Z').toISOString(),
         end_date_time: new Date('2024-01-01T12:00:00Z').toISOString(),
         is_meal_event: false,
     };
 
-    const sampleEvent6: AddEventsInterface = {
+    const sampleEvent6: AddEvent = {
         event_name: 'Sample Event 6',
         start_date_time: '2024-01-02T14:00:00Z',
         end_date_time: '2024-01-02T16:00:00Z',
         is_meal_event: false,
     };
 
-    const sampleEvent7: AddEventsInterface = {
+    const sampleEvent7: AddEvent = {
         event_name: 'Sample Event 7',
         start_date_time: '2024-01-03T14:00:00Z',
         end_date_time: '2024-01-03T16:00:00Z',
         is_meal_event: false,
     };
 
-    const sampleEvent8: AddEventsInterface = {
+    const sampleEvent8: AddEvent = {
         event_name: 'Sample Event 8',
         start_date_time: '2024-01-04T14:00:00Z',
         end_date_time: '2024-01-04T16:00:00Z',
@@ -91,7 +91,7 @@ addSampleEvents().then(async (): Promise<void> => {
 
     // Modify the event
     if (dayEvents.length > 0) {
-        const updatedEvent: EventsInterface = {
+        const updatedEvent: Event = {
             event_id: dayEvents[0].event_id,
             event_name: 'MODIFIED!!!!!!!!!!!!!!!',
             start_date_time: dayEvents[0].start_date_time,

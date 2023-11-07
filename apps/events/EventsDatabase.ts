@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { AddEventsInterface, EventsInterface } from './EventsInterface';
+import { AddEvent, Event } from './EventsInterface';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -8,7 +8,7 @@ const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Adds an event to the database
-export async function addEvent(eventData: AddEventsInterface): Promise<void> {
+export async function addEvent(eventData: AddEvent): Promise<void> {
     const { data, error } = await supabase
         .from('Events')
         .insert([eventData]);
@@ -17,7 +17,7 @@ export async function addEvent(eventData: AddEventsInterface): Promise<void> {
     console.log('Event inserted successfully:', data);
 }
 
-export async function deleteEvent(event: EventsInterface): Promise<void> {
+export async function deleteEvent(event: Event): Promise<void> {
     const { data, error } = await supabase
         .from('Events')
         .delete()
@@ -27,7 +27,7 @@ export async function deleteEvent(event: EventsInterface): Promise<void> {
     console.log('Event deleted successfully:', data);
 }
 
-export async function getDayEvents(day: string): Promise<EventsInterface[]> {
+export async function getDayEvents(day: string): Promise<Event[]> {
     const { data, error } = await supabase
         .from('Events')
         .select()
@@ -39,7 +39,7 @@ export async function getDayEvents(day: string): Promise<EventsInterface[]> {
 }
 
 // Gets all events in month from database
-export async function getMonthEvents(month: string): Promise<EventsInterface[]> {
+export async function getMonthEvents(month: string): Promise<Event[]> {
     const startDate = new Date(`${month}-01T00:00:00.000Z`);
     const endDate = new Date(`${month}-31T23:59:59.999Z`);
 
@@ -54,7 +54,7 @@ export async function getMonthEvents(month: string): Promise<EventsInterface[]> 
 }
 
 // Gets all events in week from database
-export async function getWeekEvents(week: string): Promise<EventsInterface[]> {
+export async function getWeekEvents(week: string): Promise<Event[]> {
     const startDate = new Date(week);
     startDate.setDate(startDate.getDate() - startDate.getDay());
     const endDate = new Date(startDate);
@@ -71,7 +71,7 @@ export async function getWeekEvents(week: string): Promise<EventsInterface[]> {
 }
 
 // Modifies an event in the database
-export async function modifyEvent(oldEvent: EventsInterface, updatedEvent: EventsInterface): Promise<void> {
+export async function modifyEvent(oldEvent: Event, updatedEvent: Event): Promise<void> {
     const { error } = await supabase
         .from('Events')
         .upsert([updatedEvent])

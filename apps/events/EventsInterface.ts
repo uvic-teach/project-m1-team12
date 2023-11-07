@@ -1,4 +1,4 @@
-export interface EventsInterface {
+export interface Event {
   event_id: number;
   event_name: string;
   start_date_time: string;
@@ -6,7 +6,7 @@ export interface EventsInterface {
   is_meal_event: boolean;
 }
 
-export interface AddEventsInterface {
+export interface AddEvent {
   event_name: string;
   start_date_time: string;
   end_date_time: string;
