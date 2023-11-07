@@ -6,19 +6,17 @@ import { createClient } from '@supabase/supabase-js'
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-
-
-const ably = new Ably.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
+dotenv.config();
 const app = express();
 const PORT =  parseInt(process.env.PORT || "8080");
 
+app.use(cors());
+app.use(bodyParser.json());
+
+const ably = new Ably.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const supabaseUrl = 'https://vtcuspkqczxhqqptkxbl.supabase.co'
 const supabaseKey = process.env.API_KEY || 'API_KEY'
 const supabase = createClient(supabaseUrl, supabaseKey)
-
-app.use(cors());
-app.use(bodyParser.json());
-dotenv.config();
 
 app.post('/publish', async (req: Request, res: Response) => {
     const { channel: channelName, message }: { channel: string, message: Message } = req.body;
@@ -54,8 +52,11 @@ app.post('/publish', async (req: Request, res: Response) => {
                 }]);
             if (error) throw error;
             res.json(data && data[0]);
-        } catch (dbErr) {
+        } catch (dbErr: any) {
             console.error(dbErr);
+            if (dbErr.code === '23505') {  // Unique constraint violation
+                return res.sendStatus(200);
+            }
             res.sendStatus(500);
         }
     });
@@ -119,7 +120,7 @@ app.get('/history/:channel', async (req: Request, res: Response) => {
     if (!channel) {
         return res.sendStatus(400);
     }
-    const limit = req.query.limit || 10;
+    const limit = 10;
 
     try {
         const { data, error } = await supabase
