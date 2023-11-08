@@ -30,7 +30,6 @@ app.post('/publish', async (req: Request, res: Response) => {
         return res.sendStatus(400);
     }
 
-
     const channel = ably.channels.get(channelName);
 
     channel.publish(message.name || '', message.data, async (err) => {
@@ -122,7 +121,7 @@ app.get('/history/:channel', async (req: Request, res: Response) => {
     if (!channel) {
         return res.sendStatus(400);
     }
-    const limit = 10;
+    const limit = 10; // Make dynamic?
 
     try {
         const { data, error } = await supabase
@@ -139,7 +138,7 @@ app.get('/history/:channel', async (req: Request, res: Response) => {
     }
 });
 
-
+// currently unused and untested
 app.get('/presence/:channel', async (req: Request, res: Response) => {
     const { channel: channelName } = req.params;
     const channel = ably.channels.get(channelName);
