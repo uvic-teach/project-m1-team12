@@ -5,6 +5,8 @@ import { Button, TextField, FormControl, FormControlLabel, Checkbox, InputLabel 
 import Box from "@mui/material/Box";
 import './calendarStyles.css'
 
+const backendUrl = 'http://localhost:8081';
+
 function formatDate(input: string): string {
     const date = new Date(input);
     return date.toISOString().split('.')[0] + 'Z';
@@ -17,7 +19,7 @@ function EventForm() {
     const [isMealtime, setIsMealtime] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         let missingFields = [];
@@ -46,20 +48,35 @@ function EventForm() {
             return;
         }
 
-        console.log({
+        const eventData = {
             event_name: eventName,
             start_date_time: formattedStartDateTime,
             end_date_time: formattedEndDateTime,
-            is_meal_event: isMealtime
-        });
+            is_meal_event: isMealtime,
+        };
 
-        setEventName('');
-        setStartDateTime('');
-        setEndDateTime('');
-        setIsMealtime(false);
+        try {
+            console.log(eventData);
+            const response = await fetch(`${backendUrl}/events`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(eventData),
+            });
 
-        // Reset the error message state
-        setErrorMessage(null);
+            if (!response.ok) {
+                throw new Error(`${response.statusText}`);
+            }
+
+            setEventName('');
+            setStartDateTime('');
+            setEndDateTime('');
+            setIsMealtime(false);
+            setErrorMessage(null);
+        } catch (error) {
+            setErrorMessage(`Error adding event: ${error}`);
+        }
     };
 
     return (
