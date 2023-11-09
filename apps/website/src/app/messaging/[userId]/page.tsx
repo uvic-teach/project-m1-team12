@@ -3,16 +3,17 @@
 import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 
-const backendUrl = 'http://localhost:8080'; 
+const backendUrl = 'https://messaging-microservice.fly.dev'; 
+// const backendUrl = 'http://localhost:8080'; 
 
-async function publishMessage(channel: string, message: string) {
+async function publishMessage(channel: string, message: string, clientId: string) {
     try {
         const response = await fetch(`${backendUrl}/publish`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ channel, message: { data: message } })
+            body: JSON.stringify({ channel, message: { data: message, clientId: clientId} })
         });
         const data = await response.json();
         return data;
@@ -33,22 +34,41 @@ async function fetchHistory(channel: string, limit: number = 10) {
     }
 }
 
+
+
 const Messaging = ({ params }: { params: { userId: string } }) => {
     const { userId } = params;
+    const [clientId, setClientId] = useState("1");
     const [messages, setMessages] = useState([]);
-    const [channel, setChannel] = useState("default");
+    const [channel, setChannel] = useState("");
     const [message, setMessage] = useState('');
 
     let messagesContainer = useRef<any>(null);
 
+    // fetch message history
+    const messageHistory = async () => {
+        try {
+            const history = await fetchHistory(channel);
+            setMessages(history.reverse());
+            // scroll not working
+            messagesContainer.current.scrollIntoView({ block: "end" });
+        } catch (error) {
+            console.error('Error fetching history:', error);
+        }
+    };
+
+    // fetch channel if it exists, create channel otherwise
     useEffect(() => {
-        if (userId) {
+        setClientId(localStorage.getItem('userId') || "1");
+        if (clientId) {
             const createOrGetChannel = async () => {
                 try {
                     const response = await fetch(`${backendUrl}/create-or-get-channel`, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ user1: 1, user2: userId }),
+                        headers: { 
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ user1: clientId, user2: userId }),
                     });
                     const data = await response.json();
                     setChannel(data.name);
@@ -58,52 +78,37 @@ const Messaging = ({ params }: { params: { userId: string } }) => {
             };
 
             createOrGetChannel();
-            handleFetchHistory();
         }
 
     }, [userId]);
 
+
+    // fetch history when channel name is loaded
+    // TODO: fix scroll and merge into one useEffect hook
     useEffect(() => {
         if (channel) {
-            const messageHistory = async () => {
-                try {
-                    const history = await fetchHistory(channel);
-                    setMessages(history.reverse());
-                    messagesContainer.current.scrollIntoView({ block: "end" });
-                } catch (error) {
-                    console.error('Error fetching history:', error);
-                }
-            };
+            
 
             messageHistory();
-            // scroll to bottom of continer
         }
     }, [channel]);
 
     const handlePublish = async () => {
         try {
-            await publishMessage(channel, message);
+            await publishMessage(channel, message, clientId);
             setMessage('');
+            messageHistory();
             console.log('Message published');
         } catch (error) {
             console.error('Error publishing message:', error);
         }
     };
-    
-    const handleFetchHistory = async () => {
-        try {
-            const history = await fetchHistory(channel);
-            console.log('Message history:', history);
-        } catch (error) {
-            console.error('Error fetching history:', error);
-        }
-    };
 
     return (
-        <div className="w-screen h-screen p-8 bg-gradient-to-r from-slate-800 via-gray-800 to-indigo-950 flex flex-col justify-start gap-8">
+        <div className="w-screen h-screen p-8 bg-gray-900 flex flex-col justify-start gap-8">
             <div className="flex flex-col max-w-xl mx-auto h-100 gap-6">
-                <div ref={messagesContainer} className="flex flex-col bg-gray-700 h-[75vh] overflow-y-scroll py-4 rounded-lg gap-y-4 max-w-lg no-scrollbar">
-                    {messages.map((message: any) => <Message key={message.id} message={message} />)}
+                <div ref={messagesContainer} className="flex flex-col bg-gray-800 border-2 border-gray-700 h-[75vh] overflow-y-scroll py-4 rounded-lg gap-y-4 max-w-lg no-scrollbar">
+                    {messages.map((message: any) => <Message key={message.id} message={message} clientId={clientId}/>)}
                 </div>
                 <div className="flex w-full text-lg rounded-lg gap-4">
                     <input
@@ -120,15 +125,15 @@ const Messaging = ({ params }: { params: { userId: string } }) => {
     );
 };
 
-const Message = ({ message }: { message: any }) => {
+const Message = ({ message, clientId }: { message: {data: string, client_id: string}, clientId: string }) => {
     return (
-            message.data[0] === "t" ?
-            <div className="flex flex-col max-w-[16rem] p-4 rounded-r-lg bg-gray-300 gap-4">
-                <p className="text-black">{message.data}</p>
+            message.client_id == clientId ?
+            <div className="flex flex-col max-w-[16rem] ml-auto p-4 rounded-l-lg bg-blue-500 gap-4">
+                <p className="text-white text-sm">{message.data}</p>
             </div>
             :
-            <div className="flex flex-col max-w-sm ml-auto p-4 rounded-l-lg bg-blue-500 gap-4">
-                <p className="text-white">{message.data}</p>
+            <div className="flex flex-col max-w-[16rem] p-4 rounded-r-lg bg-gray-300 gap-4">
+                <p className="text-black">{message.data}</p>
             </div>
     );
 }
