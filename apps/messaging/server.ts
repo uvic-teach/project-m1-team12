@@ -10,11 +10,13 @@ dotenv.config();
 const app = express();
 const PORT =  parseInt(process.env.PORT || "8080");
 
-app.use(cors());
-app.use(bodyParser.json());
 app.use(cors({
-    origin: ["http://localhost:3000"],
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", 
+    allowedHeaders: ["Content-Type", "Authorization"] 
   }));
+  
+app.use(bodyParser.json());
 
 const ably = new Ably.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const supabaseUrl = 'https://vtcuspkqczxhqqptkxbl.supabase.co'
