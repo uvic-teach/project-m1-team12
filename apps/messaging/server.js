@@ -23,6 +23,9 @@ const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || "8080");
 app.use((0, cors_1.default)());
 app.use(body_parser_1.default.json());
+app.use((0, cors_1.default)({
+    origin: ["http://localhost:3000"],
+}));
 const ably = new ably_1.default.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const supabaseUrl = 'https://vtcuspkqczxhqqptkxbl.supabase.co';
 const supabaseKey = process.env.API_KEY || 'API_KEY';
@@ -32,8 +35,11 @@ app.post('/publish', (req, res) => __awaiter(void 0, void 0, void 0, function* (
     if (!channelName || !message) {
         return res.sendStatus(400);
     }
-    // TODO !TM - implement safety check on the message fields
-    // Note that not all the fields are required
+    // Check Message is well formed
+    if (message.data == undefined || message.clientId == undefined) {
+        console.error('Missing Parameters' + JSON.stringify(message) + ' ' + JSON.stringify(message.data) + ' ' + JSON.stringify(message.clientId));
+        return res.sendStatus(400);
+    }
     const channel = ably.channels.get(channelName);
     channel.publish(message.name || '', message.data, (err) => __awaiter(void 0, void 0, void 0, function* () {
         if (err) {
@@ -78,13 +84,11 @@ app.post('/subscribe', (req, res) => {
     });
     res.json({ status: 200 });
 });
-// TODO !TM - implement unsubscribe
 app.post('/unsubscribe', (req, res) => {
-    // This is an untested guess at what it might look like
-    // const { channel: channelName, subscriptionId } = req.body;
-    // const channel = ably.channels.get(channelName);
-    // channel.unsubscribe(subscriptionId);
-    // res.send('Unsubscribed!');
+    const { channel: channelName, subscriptionId } = req.body;
+    const channel = ably.channels.get(channelName);
+    channel.unsubscribe(subscriptionId);
+    res.send('Unsubscribed!');
 });
 app.post('/create-or-get-channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { user1, user2 } = req.body;
@@ -105,8 +109,12 @@ app.post('/create-or-get-channel', (req, res) => __awaiter(void 0, void 0, void 
         ({ data, error } = yield supabase
             .from('channels')
             .insert([{ name: channelName }]));
-        if (error)
-            throw error;
+        if ((error === null || error === void 0 ? void 0 : error.code) === '23505') {
+            //do nothing
+        }
+        else {
+            throw (error);
+        }
         res.json(data && data[0]); // Create and return the new channel if not found
     }
     catch (dbErr) {
@@ -119,7 +127,7 @@ app.get('/history/:channel', (req, res) => __awaiter(void 0, void 0, void 0, fun
     if (!channel) {
         return res.sendStatus(400);
     }
-    const limit = 10;
+    const limit = 10; // Make dynamic?
     try {
         const { data, error } = yield supabase
             .from('messages')
@@ -136,18 +144,23 @@ app.get('/history/:channel', (req, res) => __awaiter(void 0, void 0, void 0, fun
         res.sendStatus(500);
     }
 }));
-// TODO !TM - implement presence
+// currently unused and untested
 app.get('/presence/:channel', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // This is an untested guess at what it might look like
-    // const { channel: channelName } = req.params;
-    // const channel = ably.channels.get(channelName);
-    // channel.presence.get((err, presenceSet) => {
-    //     if (err) {
-    //         console.error('Presence retrieval failed:', err.message);
-    //         return res.sendStatus(500);
-    //     }
-    //     res.json(presenceSet);
-    // });
+    const { channel: channelName } = req.params;
+    const channel = ably.channels.get(channelName);
+    // Attach
+    yield channel.attach((err) => {
+        if (err) {
+            return console.error("Error attaching to the channel.");
+        }
+    });
+    // Enter the presence set
+    yield channel.presence.enter("test", (err) => {
+        if (err) {
+            return console.error("Error entering presence set.");
+        }
+        console.log("Entered the presence set.");
+    });
 }));
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}`);

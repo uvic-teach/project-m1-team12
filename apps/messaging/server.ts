@@ -12,6 +12,9 @@ const PORT =  parseInt(process.env.PORT || "8080");
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(cors({
+    origin: ["http://localhost:3000"],
+  }));
 
 const ably = new Ably.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const supabaseUrl = 'https://vtcuspkqczxhqqptkxbl.supabase.co'
@@ -25,8 +28,8 @@ app.post('/publish', async (req: Request, res: Response) => {
     }
 
     // Check Message is well formed
-    if (message?.data == undefined || message?.id == undefined || message?.timestamp == undefined) {
-        console.error('Missing Parameters.');
+    if (message.data == undefined || message.clientId == undefined) {
+        console.error('Missing Parameters' + JSON.stringify(message) + ' ' + JSON.stringify(message.data) + ' ' + JSON.stringify(message.clientId));
         return res.sendStatus(400);
     }
 
@@ -107,7 +110,11 @@ app.post('/create-or-get-channel', async (req: Request, res: Response) => {
         ({ data, error } = await supabase
             .from('channels')
             .insert([{ name: channelName }]));
-        if (error) throw error;
+        if (error?.code === '23505')  {
+            //do nothing
+        } else {
+            throw(error);
+        }
         res.json(data && data[0]);  // Create and return the new channel if not found
     } catch (dbErr) {
         console.error(dbErr);
