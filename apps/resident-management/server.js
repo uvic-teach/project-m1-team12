@@ -57,8 +57,12 @@ app.post('/user/login', async (req, res) => {
 
 // return list of all users in the db
 app.get('/usersList', async function(req, res) {
-    const user = await User.find();
-    res.json({users:user});
+    try{
+        const user = await User.find();
+        res.json({status: "ok", users: user});
+    }catch(err){
+        res.json({status: "error", error: err})
+    }
 });
 
 app.listen(PORT, '0.0.0.0', () => {
