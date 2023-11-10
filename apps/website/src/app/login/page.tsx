@@ -32,7 +32,8 @@ export default function Registration() {
 			localStorage.setItem('userId', data?.id || 1);
 			window.location.href = '/'
 		}else{
-			localStorage.removeItem('token')
+			localStorage.removeItem('username')
+			localStorage.removeItem('userId')
 			alert('Login Unsuccessful. Please check your username or password and try again')
 		}
 		setButtonDisabled(false)
