@@ -5,7 +5,7 @@ import { Button, TextField, FormControl, FormControlLabel, Checkbox, InputLabel 
 import Box from "@mui/material/Box";
 import './calendarStyles.css'
 
-const backendUrl = 'http://localhost:8081';
+const backendUrl = 'https://events-microservice.fly.dev'; // when running locally: 'http://localhost:8081'
 
 function formatDate(input: string): string {
     const date = new Date(input);
