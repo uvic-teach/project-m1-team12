@@ -49,7 +49,9 @@ export async function deleteEvent(event: Event): Promise<void> {
         .delete()
         .eq('event_id', event.event_id);
 
-    if (error) throw new Error(`Error deleting event: ${error.message}`);
+    if (error) {
+        console.log('Error deleting event: ', error.message);
+    }
     console.log('Event deleted successfully:', data);
 }
 
@@ -60,7 +62,11 @@ export async function getDayEvents(day: string): Promise<Event[]> {
         .gte('start_date_time', new Date(`${day}T00:00:00.000Z`).toISOString())
         .lt('start_date_time', new Date(`${day}T23:59:59.999Z`).toISOString());
 
-    if (error) throw new Error(`Error fetching events for day ${day}: ${error.message}`);
+    if (error) {
+        console.log(`Error fetching events for day: ${day} ${error.message}`, );
+    }
+    console.log(`Events fetched successfully for day: ${day} ${data}`);
+
     return data || [];
 }
 
@@ -75,7 +81,11 @@ export async function getMonthEvents(month: string): Promise<Event[]> {
         .gte('start_date_time', startDate.toISOString())
         .lt('start_date_time', endDate.toISOString());
 
-    if (error) throw new Error(`Error fetching events for month ${month}: ${error.message}`);
+    if (error) {
+        console.log(`Error fetching events for month: ${month} ${error.message}`, );
+    }
+    console.log(`Events fetched successfully for month: ${month} ${data}`);
+
     return data || [];
 }
 
@@ -92,7 +102,11 @@ export async function getWeekEvents(week: string): Promise<Event[]> {
         .gte('start_date_time', startDate.toISOString())
         .lt('start_date_time', new Date(endDate.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString());
 
-    if (error) throw new Error(`Error fetching events for week ${week}: ${error.message}`);
+    if (error) {
+        console.log(`Error fetching events for week: ${week} ${error.message}`, );
+    }
+    console.log(`Events fetched successfully for week: ${week} ${data}`);
+
     return data || [];
 }
 
@@ -103,7 +117,10 @@ export async function modifyEvent(oldEvent: Event, updatedEvent: Event): Promise
         .upsert([updatedEvent])
         .eq('event_id', oldEvent.event_id);
 
-    if (error) throw new Error(`Error modifying event: ${error.message}`);
+        if (error) {
+            console.log('Error modifying event: ', error.message);
+        }
+        console.log(`Event modified successfully, old event: ${oldEvent}, updated event: ${updatedEvent}`);
 }
 
 // Routes
