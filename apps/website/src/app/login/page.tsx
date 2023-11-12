@@ -25,8 +25,8 @@ export default function Registration() {
 
 		const data = await response.json()
 		
-		console.log('here')
-		if (data.user == true) {
+		//console.log('here')
+		if (data.status == "ok") {
 			localStorage.setItem('token', data.name)
 			window.location.href = '/'
 		}else{
