@@ -6,8 +6,20 @@ import { useEffect, useRef, useState } from 'react';
 const backendUrl = 'https://messaging-microservice.fly.dev'; 
 // const backendUrl = 'http://localhost:8080'; 
 
+// Retry function
+async function retry(fn: Function, retries = 3, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fn();
+        } catch (error) {
+            if (i === retries - 1) throw error;
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+}
+
 async function publishMessage(channel: string, message: string, clientId: string) {
-    try {
+    return retry(async () => {
         const response = await fetch(`${backendUrl}/publish`, {
             method: 'POST',
             headers: {
@@ -17,10 +29,7 @@ async function publishMessage(channel: string, message: string, clientId: string
         });
         const data = await response.json();
         return data;
-    } catch (error) {
-        console.error('Error publishing message:', error);
-        throw error;
-    }
+    });
 }
 
 async function fetchHistory(channel: string, limit: number = 10) {
@@ -33,7 +42,6 @@ async function fetchHistory(channel: string, limit: number = 10) {
         throw error;
     }
 }
-
 
 
 const Messaging = ({ params }: { params: { userId: string } }) => {
@@ -87,8 +95,6 @@ const Messaging = ({ params }: { params: { userId: string } }) => {
     // TODO: fix scroll and merge into one useEffect hook
     useEffect(() => {
         if (channel) {
-            
-
             messageHistory();
         }
     }, [channel]);

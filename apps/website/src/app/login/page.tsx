@@ -25,19 +25,18 @@ export default function Registration() {
 			}),
 		})
 
-		const data = await response.json()
-		
-		if (data.user == true) {
-			localStorage.setItem('username', data.name);
-			localStorage.setItem('userId', data?.id || 1);
-			window.location.href = '/'
-		}else{
-			localStorage.removeItem('username')
-			localStorage.removeItem('userId')
-			alert('Login Unsuccessful. Please check your username or password and try again')
-		}
+		const data = await response.json().then((data) => {
+				if (data.user) {
+				localStorage.setItem('username', data.name);
+				localStorage.setItem('userId', data?.id || 1);
+				window.location.href = '/'
+			}else{
+				localStorage.removeItem('username')
+				localStorage.removeItem('userId')
+				alert('Login Unsuccessful. Please check your username or password and try again')
+			}
+		});
 		setButtonDisabled(false)
-		console.log(data)
 
 	}
 
