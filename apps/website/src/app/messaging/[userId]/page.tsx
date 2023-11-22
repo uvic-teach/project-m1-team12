@@ -1,68 +1,141 @@
-export default function Message({ params }: { params: { userId: string } }) {
-    const mockMessages  = [
-        {
-            id: 1,
-            text: 'Hello!',
-            sender: 'me',
-        },
-        {
-            id: 2,
-            text: 'Hi!',
-            sender: 'them',
-        },
-        {
-            id: 3,
-            text: 'How are you?',
-            sender: 'me',
-        },
-        {
-            id: 4,
-            text: 'I\'m good, how are you?',
-            sender: 'them',
-        },
-        {
-            id: 5,
-            text: 'I am horrible, thanks!',
-            sender: 'me',
+'use client'
+
+import { useRouter } from 'next/router';
+import { useEffect, useRef, useState } from 'react';
+
+const backendUrl = 'https://messaging-microservice.fly.dev'; 
+// const backendUrl = 'http://localhost:8080'; 
+
+async function publishMessage(channel: string, message: string, clientId: string) {
+    try {
+        const response = await fetch(`${backendUrl}/publish`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ channel, message: { data: message, clientId: clientId} })
+        });
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error publishing message:', error);
+        throw error;
+    }
+}
+
+async function fetchHistory(channel: string, limit: number = 10) {
+    try {
+        const response = await fetch(`${backendUrl}/history/${channel}?limit=${limit}`);
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching history:', error);
+        throw error;
+    }
+}
+
+
+
+const Messaging = ({ params }: { params: { userId: string } }) => {
+    const { userId } = params;
+    const [clientId, setClientId] = useState("1");
+    const [messages, setMessages] = useState([]);
+    const [channel, setChannel] = useState("");
+    const [message, setMessage] = useState('');
+
+    let messagesContainer = useRef<any>(null);
+
+    // fetch message history
+    const messageHistory = async () => {
+        try {
+            const history = await fetchHistory(channel);
+            setMessages(history.reverse());
+            // scroll not working
+            messagesContainer.current.scrollIntoView({ block: "end" });
+        } catch (error) {
+            console.error('Error fetching history:', error);
         }
-    ]
+    };
+
+    // fetch channel if it exists, create channel otherwise
+    useEffect(() => {
+        setClientId(localStorage.getItem('userId') || "1");
+        if (clientId) {
+            const createOrGetChannel = async () => {
+                try {
+                    const response = await fetch(`${backendUrl}/create-or-get-channel`, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ user1: clientId, user2: userId }),
+                    });
+                    const data = await response.json();
+                    setChannel(data.name);
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            };
+
+            createOrGetChannel();
+        }
+
+    }, [userId]);
+
+
+    // fetch history when channel name is loaded
+    // TODO: fix scroll and merge into one useEffect hook
+    useEffect(() => {
+        if (channel) {
+            
+
+            messageHistory();
+        }
+    }, [channel]);
+
+    const handlePublish = async () => {
+        try {
+            await publishMessage(channel, message, clientId);
+            setMessage('');
+            messageHistory();
+            console.log('Message published');
+        } catch (error) {
+            console.error('Error publishing message:', error);
+        }
+    };
 
     return (
-        <div className="w-screen h-screen p-6 gap-8 bg-orange-100 flex flex-col justify-between">
-            <h1 className="text-center text-xl h-min">{params.userId}</h1>
-            <div className="flex flex-col w-full h-full rounded-lg bg-white gap-2 p-2">
-                {mockMessages.map(message => {
-                    if (message.sender === 'me') {
-                        return meMessage(message.text)
-                    } else {
-                        return themMessage(message.text)
-                    }
-                })}
+        <div className="w-screen h-screen p-8 bg-gray-900 flex flex-col justify-start gap-8">
+            <div className="flex flex-col max-w-xl mx-auto h-100 gap-6">
+                <div ref={messagesContainer} className="flex flex-col bg-gray-800 border-2 border-gray-700 h-[75vh] overflow-y-scroll py-4 rounded-lg gap-y-4 max-w-lg no-scrollbar">
+                    {messages.map((message: any) => <Message key={message.id} message={message} clientId={clientId}/>)}
+                </div>
+                <div className="flex w-full text-lg rounded-lg gap-4">
+                    <input
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Type your message..."
+                        className="border-2 border-gray-400 rounded-md text-gray-600 w-full p-2"
+                        />
+                    <button onClick={handlePublish} className="w-sm bg-blue-500 rounded text-white px-4 font-bold">Send</button>
+                </div>
             </div>
-            <form className="w-100 h-16 flex flex-row gap-4">
-                <input type="text" defaultValue="Send Chat..." className="w-full border-2 border-gray-400 rounded-md text-gray-600 px-4" />
-                <button type="submit" className="bg-blue-500 rounded text-white py-2 px-4 font-bold">Send</button>
-            </form>
         </div>
-    )
+    );
+};
+
+const Message = ({ message, clientId }: { message: {data: string, client_id: string}, clientId: string }) => {
+    return (
+            message.client_id == clientId ?
+            <div className="flex flex-col max-w-[16rem] ml-auto p-4 rounded-l-lg bg-blue-500 gap-4">
+                <p className="text-white text-sm">{message.data}</p>
+            </div>
+            :
+            <div className="flex flex-col max-w-[16rem] p-4 rounded-r-lg bg-gray-300 gap-4">
+                <p className="text-black">{message.data}</p>
+            </div>
+    );
 }
 
-const meMessage = (text: string) => {
-    return (
-        <div className="flex justify-end">
-            <div className="bg-blue-200 rounded-md p-2">
-                <p>{text}</p>
-            </div>
-        </div>
-    )
-}
-
-const themMessage = (text: string) => {
-    return (
-        <div className="flex justify-start">
-            <div className="bg-gray-200 rounded-md p-2">
-                <p>{text}</p>
-            </div>
-        </div>
-    )
-}
+export default Messaging;
