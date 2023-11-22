@@ -43,19 +43,27 @@ app.post('/user/login', async (req, res) => {
             password: req.body.password,
         })
         if(user){
-            return res.json({status: 'ok', user: true, name: user.name})
+            return res.json({status: 'ok', user: true, name: user.name, user: user})
         }else{
-        res.json({status: 'error', user:false})
+            res.json({status: 'user error', user:false})
         }
     }catch(err){
-        res.json({status: 'ok', error: err})
+        res.json({status: 'error', error: err})
     }
     
 })
 
 
 
-// get name and ID of all residents...
+// return list of all users in the db
+app.get('/usersList', async function(req, res) {
+    try{
+        const user = await User.find();
+        res.json({status: "ok", users: user});
+    }catch(err){
+        res.json({status: "error", error: err})
+    }
+});
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}`);
