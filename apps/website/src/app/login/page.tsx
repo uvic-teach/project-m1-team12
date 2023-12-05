@@ -27,7 +27,7 @@ export default function Registration() {
 
 		const data = await response.json()
 		
-		if (data.user == true) {
+		if (data.status == "ok") {
 			localStorage.setItem('username', data.name);
 			localStorage.setItem('userId', data?.id || 1);
 			window.location.href = '/'
