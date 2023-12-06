@@ -127,41 +127,44 @@ function EventForm() {
 export default function Calendar() {
     const [showForm, setShowForm] = useState(false);
     const [events, setEvents] = useState<Event[]>([]);
+    const [currentMonth, setCurrentMonth] = useState('');
 
-    useEffect(() => {
-        // Async function to fetch events
-        const fetchEvents = async () => {
-            const day = '2023-12-06'; // Example day, modify as needed
 
-            try {
-                // Make GET request to the backend
-                console.log(`Fetching events from: ${backendUrl}/events/day/${day}`);
-                const response = await fetch(`${backendUrl}/events/day/${day}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+    // Async function to fetch events for the current month
+    const fetchEventsForMonth = async (date: Date) => {
+        // Format the month in 'YYYY-MM' format
+        const month = date.toISOString().substring(0, 7); // This will give you 'YYYY-MM' from the date
 
-                });
-
-                if (!response.ok) {
-                    throw new Error(`${response.statusText}`);
-                }
-
-                const fetchedEvents = await response.json();
-                setEvents(fetchedEvents);
-                console.log(fetchedEvents);
-            } catch (error) {
-                console.error('Error fetching events:', error);
+        try {
+            const response = await fetch(`${backendUrl}/events/month/${month}`);
+            if (!response.ok) {
+                throw new Error('Error fetching events');
             }
-        };
+            const eventsForMonth = await response.json();
+            setEvents(eventsForMonth);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        }
+    };
 
-        fetchEvents();
-    }, []); // Run the effect only once on component mount
+    // Effect to fetch events when the component mounts for the current month
+    useEffect(() => {
+        const currentDate = new Date();
+        fetchEventsForMonth(currentDate);
+    }, []);
 
     return (
         <div className="w-screen min-h-screen text-xl flex flex-col items-center justify-center gap-8">
-            {!showForm && <Button variant="contained" color="primary" onClick={() => setShowForm(!showForm)} style={{ backgroundColor: '#3f51b5', color: '#fff' }}>Add Event</Button>}
+            {!showForm && (
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => setShowForm(true)}
+                    style={{ backgroundColor: '#3f51b5', color: '#fff' }}
+                >
+                    Add Event
+                </Button>
+            )}
 
             {showForm && <EventForm />}
 
@@ -171,19 +174,25 @@ export default function Calendar() {
                 headerToolbar={{
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay',
                 }}
                 events={events.map((event) => ({
                     title: event.event_name,
                     start: event.start_date_time,
                     end: event.end_date_time,
-                    allDay: true, // Set to true if the event spans the entire day
+                    allDay: event.is_meal_event,
                 }))}
+                datesSet={({ view }) => {
+                    // Fetch events for the new month
+                    const year = view.currentStart.getUTCFullYear();
+                    const month = view.currentStart.getUTCMonth();
+                    const date = new Date(year, month);
+                    fetchEventsForMonth(date);
+                }}
             />
         </div>
     );
 }
-
 const CalendarComponent: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
 

@@ -124,23 +124,23 @@ export async function modifyEvent(oldEvent: Event, updatedEvent: Event): Promise
 }
 
 // Routes
-app.get('/events/day/2023-12-06', async (req: any, res: any) => {
-    const day = '2023-12-06';
-    console.log('received day!!!: ', day);
-    try {
-        const events = await getDayEvents(day);
-        res.json(events);
-    } catch (error) {
-        res.status(500).json({ error: error });
-    }
-});
-
 app.post('/events', async (req: any, res: any) => {
     console.log(`Received data, ${req.body}`);
     const eventData = req.body; // Assuming the client sends event data in the request body
     try {
         await addEvent(eventData);
         res.json({ message: 'Event added successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error });
+    }
+});
+
+app.get('/events/day/:day', async (req: any, res: any) => {
+    const day = req.params.day;
+    console.log('received day!!!: ', day);
+    try {
+        const events = await getDayEvents(day);
+        res.json(events);
     } catch (error) {
         res.status(500).json({ error: error });
     }
