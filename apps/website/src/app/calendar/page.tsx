@@ -154,7 +154,7 @@ export default function Calendar() {
     }, []);
 
     return (
-        <div className="w-screen min-h-screen text-xl flex flex-col items-center justify-center gap-8">
+        <div className="calendar-container">
             {!showForm && (
                 <Button
                     variant="contained"
@@ -168,28 +168,30 @@ export default function Calendar() {
 
             {showForm && <EventForm />}
 
-            <FullCalendar
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
-                headerToolbar={{
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay',
-                }}
-                events={events.map((event) => ({
-                    title: event.event_name,
-                    start: event.start_date_time,
-                    end: event.end_date_time,
-                    allDay: event.is_meal_event,
-                }))}
-                datesSet={({ view }) => {
-                    // Fetch events for the new month
-                    const year = view.currentStart.getUTCFullYear();
-                    const month = view.currentStart.getUTCMonth();
-                    const date = new Date(year, month);
-                    fetchEventsForMonth(date);
-                }}
-            />
+            <div className="calendar">
+                <FullCalendar
+                    plugins={[dayGridPlugin, interactionPlugin]}
+                    initialView="dayGridMonth"
+                    headerToolbar={{
+                        left: 'prev,next',  // Keep only the prev and next buttons
+                        center: 'title',    // Keep the title at the center
+                        right: '',          // Remove the right side buttons entirely
+                    }}
+                    events={events.map((event) => ({
+                        title: event.event_name,
+                        start: event.start_date_time,
+                        end: event.end_date_time,
+                        allDay: event.is_meal_event,
+                    }))}
+                    datesSet={({ view }) => {
+                        // Fetch events for the new month
+                        const year = view.currentStart.getUTCFullYear();
+                        const month = view.currentStart.getUTCMonth();
+                        const date = new Date(year, month);
+                        fetchEventsForMonth(date);
+                    }}
+                />
+            </div>
         </div>
     );
 }

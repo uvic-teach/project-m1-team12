@@ -43,3 +43,38 @@
     margin-top: 1rem;
 }
 
+.calendar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%; /* Ensure the container is full width */
+    padding: 10px; /* Adjust padding as needed */
+    box-sizing: border-box; /* Include padding in the height calculation */
+}
+
+.calendar {
+    flex: 1;
+    overflow: hidden; /* Prevent any overflow from causing scroll */
+    padding: 10px;
+}
+
+/* You may want to adjust the top margin of the calendar to ensure it fits without scrolling */
+.fc .fc-toolbar.fc-header-toolbar {
+    margin-top: 10px; /* Adjust the top margin as needed */
+}
+
+/* Adjust the size of the calendar's content */
+.fc .fc-view-harness {
+    max-height: calc(100vh - 150px); /* Adjust the value '150px' based on your header and button sizes */
+}
+
+/* Add custom styles for the buttons if needed */
+.fc .fc-button-primary {
+    color: #fff; /* Adjust button text color if needed */
+}
+
+/* Ensure the root element takes the full height of the viewport */
+html, body, #root {
+    height: 100%;
+    margin: 0;
+}
