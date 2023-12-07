@@ -21,21 +21,18 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = parseInt(process.env.PORT || "8080");
-app.use((0, cors_1.default)());
-app.use(body_parser_1.default.json());
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:3000"],
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
+app.use(body_parser_1.default.json());
 const ably = new ably_1.default.Realtime(process.env.ABLY_KEY || 'ABLY_KEY');
 const supabaseUrl = 'https://vtcuspkqczxhqqptkxbl.supabase.co';
 const supabaseKey = process.env.API_KEY || 'API_KEY';
 const supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey);
 app.post('/publish', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { channel: channelName, message } = req.body;
-    if (!channelName || !message) {
-        return res.sendStatus(400);
-    }
-    // Check Message is well formed
     if (message.data == undefined || message.clientId == undefined) {
         console.error('Missing Parameters' + JSON.stringify(message) + ' ' + JSON.stringify(message.data) + ' ' + JSON.stringify(message.clientId));
         return res.sendStatus(400);
@@ -73,6 +70,46 @@ app.post('/publish', (req, res) => __awaiter(void 0, void 0, void 0, function* (
         }
     }));
 }));
+app.post('/announce', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { message } = req.body;
+    if (!message) {
+        return res.sendStatus(400);
+    }
+    // Check Message is well formed
+    if (message.data == undefined) {
+        console.error('Missing Parameters' + JSON.stringify(message) + ' ' + JSON.stringify(message.data) + ' ' + JSON.stringify(message.clientId));
+        return res.sendStatus(400);
+    }
+    const channel = ably.channels.get("announcements");
+    channel.publish(message.name || '', message.data, (err) => __awaiter(void 0, void 0, void 0, function* () {
+        if (err) {
+            console.error('Publishing failed:', err.message);
+            return res.sendStatus(500);
+        }
+        message.timestamp = Date.now();
+        try {
+            const { data, error } = yield supabase
+                .from('messages')
+                .insert([{
+                    name: message.name,
+                    data: message.data,
+                    channel: 'announcements',
+                    client_id: message.clientId,
+                    connection_id: message.connectionId,
+                    timestamp: message.timestamp,
+                    extras: message.extras,
+                    encoding: message.encoding
+                }]);
+            if (error)
+                throw error;
+            res.json({ status: 200 });
+        }
+        catch (dbErr) {
+            console.error(dbErr);
+            res.sendStatus(500);
+        }
+    }));
+}));
 app.post('/subscribe', (req, res) => {
     const { channel: channelName } = req.body;
     if (!channelName) {
@@ -96,6 +133,7 @@ app.post('/create-or-get-channel', (req, res) => __awaiter(void 0, void 0, void 
         return res.sendStatus(400);
     }
     const channelName = [user1, user2].sort().join('-'); // Ensures the channel name is consistent regardless of the order of users
+    console.log(channelName);
     try {
         let { data, error } = yield supabase
             .from('channels')
@@ -133,6 +171,31 @@ app.get('/history/:channel', (req, res) => __awaiter(void 0, void 0, void 0, fun
             .from('messages')
             .select('*')
             .eq('channel', channel)
+            .order('timestamp', { ascending: false })
+            .limit(Number(limit));
+        if (error)
+            throw error;
+        res.json(data);
+    }
+    catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+}));
+app.get('/announcements', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const limit = 2; // Make dynamic?
+    try {
+        // Calculate the timestamp for 24 hours ago
+        const date24HoursAgo = new Date();
+        date24HoursAgo.setHours(date24HoursAgo.getHours() - 24);
+        // Convert to Unix timestamp (milliseconds since the epoch)
+        const timestamp24HoursAgo = date24HoursAgo.getTime();
+        const { data, error } = yield supabase
+            .from('messages')
+            .select('*')
+            .eq('channel', 'announcements')
+            // Use the Unix timestamp for comparison
+            .gte('timestamp', timestamp24HoursAgo)
             .order('timestamp', { ascending: false })
             .limit(Number(limit));
         if (error)

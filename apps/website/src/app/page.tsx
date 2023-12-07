@@ -11,8 +11,13 @@ interface HomeButtonProps {
   title: string;
 }
 
+const backendUrl = 'https://messaging-microservice.fly.dev'; 
+// const backendUrl = 'http://localhost:8080'; 
+
+
 export default function Home() {
   const [userName, setUserName] = useState(''); 
+  const [announcements, setAnnouncements] = useState([]);
   
   useEffect (() =>{
     const name = localStorage.getItem('username')
@@ -21,10 +26,33 @@ export default function Home() {
       }else{
         window.location.href = '/login'
       }
+
+      async function fetchHistory() {
+        try {
+            const response = await fetch(`${backendUrl}/announcements`);
+            const data = await response.json();
+            setAnnouncements(data);
+        } catch (error) {
+            console.error('Error fetching history:', error);
+            throw error;
+        }
+      }
+
+      fetchHistory();
   }, [])
 
   return (
-    <main className="w-screen h-screen p-8 md:px-24 md:py-12 bg-gray-900 text-white">
+    <main className="w-screen h-screen p-8 md:px-24 md:py-12 bg-gray-900 text-white flex flex-col">
+      { announcements.length > 0 ? (
+        <div className="mb-8">
+          <h2 className="text-xl">Announcements</h2>
+          <ul className="list-disc list-inside">
+            {announcements.map((announcement: any) => (
+              <li key={announcement.message}>{announcement.data}</li>
+            ))}
+          </ul>
+        </div>
+      ) : <h2 className='text-xl'>No new announcements</h2>}
       <div className="grid md:grid-cols-2 gap-4 md:gap-8 h-full w-full">
         <HomeButton to='/menu' title='Menu' />
         <HomeButton to='/emergency' title='Emergency' />

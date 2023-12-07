@@ -25,11 +25,7 @@ const supabase = createClient(supabaseUrl, supabaseKey)
 
 app.post('/publish', async (req: Request, res: Response) => {
     const { channel: channelName, message }: { channel: string, message: Message } = req.body;
-    if (!channelName || !message) {
-        return res.sendStatus(400);
-    }
 
-    // Check Message is well formed
     if (message.data == undefined || message.clientId == undefined) {
         console.error('Missing Parameters' + JSON.stringify(message) + ' ' + JSON.stringify(message.data) + ' ' + JSON.stringify(message.clientId));
         return res.sendStatus(400);
@@ -68,6 +64,50 @@ app.post('/publish', async (req: Request, res: Response) => {
             res.sendStatus(500);
         }
     });
+})
+
+app.post('/announce', async (req: Request, res: Response) => {
+    const { message }: { message: Message } = req.body;
+    if (!message) {
+        return res.sendStatus(400);
+    }
+
+    // Check Message is well formed
+    if (message.data == undefined) {
+        console.error('Missing Parameters' + JSON.stringify(message) + ' ' + JSON.stringify(message.data) + ' ' + JSON.stringify(message.clientId));
+        return res.sendStatus(400);
+    }
+
+    const channel = ably.channels.get("announcements");
+
+    channel.publish(message.name || '', message.data, async (err) => {
+        if (err) {
+            console.error('Publishing failed:', err.message);
+            return res.sendStatus(500);
+        }
+
+        message.timestamp = Date.now();
+
+        try {
+            const { data, error } = await supabase
+                .from('messages')
+                .insert([{
+                    name: message.name,
+                    data: message.data,
+                    channel: 'announcements',
+                    client_id: message.clientId,
+                    connection_id: message.connectionId,
+                    timestamp: message.timestamp,
+                    extras: message.extras,
+                    encoding: message.encoding
+                }]);
+            if (error) throw error;
+            res.json({ status: 200 })
+        } catch (dbErr: any) {
+            console.error(dbErr);
+            res.sendStatus(500);
+        }
+    });
 });
 
 app.post('/subscribe', (req: Request, res: Response) => {
@@ -98,6 +138,8 @@ app.post('/create-or-get-channel', async (req: Request, res: Response) => {
     }
     const channelName = [user1, user2].sort().join('-'); // Ensures the channel name is consistent regardless of the order of users
 
+    console.log(channelName)
+
     try {
         let { data, error } = await supabase
             .from('channels')
@@ -124,7 +166,6 @@ app.post('/create-or-get-channel', async (req: Request, res: Response) => {
     }
 });
 
-
 app.get('/history/:channel', async (req: Request, res: Response) => {
     const { channel } = req.params;
     if (!channel) {
@@ -137,6 +178,33 @@ app.get('/history/:channel', async (req: Request, res: Response) => {
             .from('messages')
             .select('*')
             .eq('channel', channel)
+            .order('timestamp', { ascending: false })
+            .limit(Number(limit));
+        if (error) throw error;
+        res.json(data);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
+});
+
+app.get('/announcements', async (req: Request, res: Response) => {
+    const limit = 2; // Make dynamic?
+
+    try {
+        // Calculate the timestamp for 24 hours ago
+        const date24HoursAgo = new Date();
+        date24HoursAgo.setHours(date24HoursAgo.getHours() - 24);
+
+        // Convert to Unix timestamp (milliseconds since the epoch)
+        const timestamp24HoursAgo = date24HoursAgo.getTime();
+
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('channel', 'announcements')
+            // Use the Unix timestamp for comparison
+            .gte('timestamp', timestamp24HoursAgo)
             .order('timestamp', { ascending: false })
             .limit(Number(limit));
         if (error) throw error;

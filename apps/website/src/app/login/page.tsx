@@ -29,7 +29,7 @@ export default function Registration() {
 		
 		if (data.status == "ok") {
 			localStorage.setItem('username', data.name);
-			localStorage.setItem('userId', data?.id || 1);
+			localStorage.setItem('userId', data?.user?._id || 1);
 			window.location.href = '/'
 		}else{
 			localStorage.removeItem('username')
@@ -37,7 +37,6 @@ export default function Registration() {
 			alert('Login Unsuccessful. Please check your username or password and try again')
 		}
 		setButtonDisabled(false)
-		console.log(data)
 
 	}
 
