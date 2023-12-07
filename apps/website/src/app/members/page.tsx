@@ -78,16 +78,17 @@ export default function Members() {
     }
 
     const userRow: React.FC<UserRowProps> = ({id, name, email}) => (
-        <div >
-            <tr key={id} className="border-b dark:border-neutral-500">
+            <tr key={id} className="border-b dark:border-neutral-600">
                 <td className="whitespace-nowrap px-6 py-4 font-medium">{name}</td>
                 <td className="whitespace-nowrap px-6 py-4 font-medium">{email}</td>
-                <button className="bg-red-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={() => deleteUser(name)}>
-                    delete {name}
-                </button>
+                <td className="justify-end">
+                    <button className="bg-red-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                            onClick={() => deleteUser(name)}>
+                        delete {name}
+                    </button>
+                </td>
+
             </tr>
-        </div>
     )
 
 
@@ -95,11 +96,12 @@ export default function Members() {
         <main className='bg-gray-900 text-gray-300 w-screen min-h-screen flex flex-col items-center gap-4 py-8'>
             <h2 className='text-3xl'>Members</h2>
             <div className="flex flex-col overflow-x-auto sm:-mx-6 lg:-mx-8 inline-block min-w-full py-2 sm:px-6 lg:px-8 overflow-hidden">
-                <table className='min-w-full text-left text-sm font-light'>
-                    <thead className="border-b font-medium dark:border-neutral-500">
+                <table className=' min-w-full text-left text-sm font-light'>
+                    <thead className="border-b font-medium dark:border-neutral-300">
                         <tr className="">
-                            <th scope="col" className="px-6 py-4">Name</th>
-                            <th scope="col" className="px-6 py-4">Email</th>
+                            <th className="px-6 py-4">Name</th>
+                            <th className="px-6 py-4">Email</th>
+                            <th className="px-6 py-4">Delete User</th>
                         </tr>
                     </thead>
                     <tbody className="justify-center">
