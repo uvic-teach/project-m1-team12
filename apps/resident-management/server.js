@@ -65,6 +65,18 @@ app.get('/usersList', async function(req, res) {
     }
 });
 
+app.delete('/deleteUser', async (req,res) => {
+    const userName = req.body.name;
+    const userEmail = req.body.email;
+    try{
+        const userToDelete = await User.deleteOne(el => el.name === userName && el.email === userEmail);
+        res.json({status: "ok", users: userToDelete})
+    }
+    catch(err){
+        res.json({status: "error", error: err})
+    }
+})
+
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
