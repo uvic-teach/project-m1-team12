@@ -1,16 +1,16 @@
 'use client'
 
-import React, {useEffect, useState} from 'react'
+import React, {ButtonHTMLAttributes, useEffect, useState} from 'react'
 
 
 export default function Members() {
     const [id, getID] = useState('')
-    const [name, getName] = useState('')
+    const [name, setName] = useState('')
     const [email, getEmail] = useState('')
     const rows = [];
     const columns = [];
     const [password, getPassword] = useState('')
-    const [buttonDisabled, setButtonDisabled] = useState(false)
+    const [buttonDisabled, setButtonDisabled] = useState(true)
     const [userData, setUserData] = useState([])
 
 
@@ -28,19 +28,22 @@ export default function Members() {
         fetchData();
     }, [])
 
-    const userRow = ({id, name, email}) => (
-        <div >
-            <tr key={id} className="border-b dark:border-neutral-500">
-                <td className="whitespace-nowrap px-6 py-4 font-medium">{name}</td>
-                <td className="whitespace-nowrap px-6 py-4 font-medium">{email}</td>
-                <button className="bg-red-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={deleteUser}>
-                    delete User
-                </button>
-            </tr>
-        </div>
-    )
 
-    async function deleteUser(event: React.MouseEventHandler<HTMLButtonElement>) {
+
+    async function checkAdmin(){
+        if (localStorage.getItem('usertype') === 'Admin') {
+            setButtonDisabled(false);
+            console.log("Admin Priveledges found");
+            return true;
+        }
+        else{
+            console.log("Not an Admin");
+            return false
+        }
+    }
+
+
+    async function deleteUser(name: string) {
         setButtonDisabled(true)
 
         const response = await fetch('https://resident-management.fly.dev/deleteUser', {
@@ -50,30 +53,36 @@ export default function Members() {
             },
             body: JSON.stringify({
                 name,
-                email,
             }),
         })
 
-        if (localStorage.getItem('usertype') === 'Admin'){
-            setButtonDisabled(false)
+        if (await checkAdmin() || 1){
+            setButtonDisabled(true)
             const data = await response.json()
             if (data.status == "ok") {
                 alert('User has been deleted.')
             }else{
-                localStorage.removeItem('username')
-                localStorage.removeItem('userId')
                 alert('Deletion unsuccessful. Please contact a developer.')
             }
             console.log(data)
+            setButtonDisabled(false)
         }
-
-
-
-
-
-
+        window.location.reload();
 
     }
+
+    const userRow = ({id, name, email}) => (
+        <div >
+            <tr key={id} className="border-b dark:border-neutral-500">
+                <td className="whitespace-nowrap px-6 py-4 font-medium">{name}</td>
+                <td className="whitespace-nowrap px-6 py-4 font-medium">{email}</td>
+                <button className="bg-red-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={() => deleteUser(name)}>
+                    delete {name}
+                </button>
+            </tr>
+        </div>
+    )
 
 
     return (
