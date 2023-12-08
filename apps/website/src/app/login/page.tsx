@@ -31,10 +31,12 @@ export default function Login() {
 		if (data.status == "ok") {
 			localStorage.setItem('username', data.name);
 			localStorage.setItem('userId', data?.id || 1);
+			localStorage.setItem('usertype', data?.usertype || 1); //remove or 1 later
 			window.location.href = '/'
 		}else{
 			localStorage.removeItem('username')
 			localStorage.removeItem('userId')
+			localStorage.removeItem('usertype')
 			alert('Login Unsuccessful. Please check your username or password and try again')
 		}
 		setButtonDisabled(false)
