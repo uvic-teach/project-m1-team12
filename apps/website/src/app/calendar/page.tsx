@@ -8,7 +8,7 @@ import { Button, TextField, FormControl, FormControlLabel, Checkbox, InputLabel 
 import Box from "@mui/material/Box";
 import './calendarStyles.css'
 
-const backendUrl = 'http://localhost:8081'; // when running locally: 'http://localhost:8081' . when deployed: 'https://events-microservice.fly.dev'
+const backendUrl = 'https://events-microservice.fly.dev'; // when running locally: 'http://localhost:8081' . when deployed: 'https://events-microservice.fly.dev'
 
 export type Event = {
     event_id: number;
@@ -84,6 +84,14 @@ function EventForm() {
             setEndDateTime('');
             setIsMealtime(false);
             setErrorMessage(null);
+
+            // Fetch the updated events for the current month
+            const currentDate = new Date();
+            const month = currentDate.toISOString().substring(0, 7);
+            const response2 = await fetch(`${backendUrl}/events/month/${month}`);
+            if (!response2.ok) {
+                throw new Error('Error fetching events');
+            }
         } catch (error) {
             setErrorMessage(`Error adding event: ${error}`);
         }
