@@ -84,14 +84,6 @@ function EventForm() {
             setEndDateTime('');
             setIsMealtime(false);
             setErrorMessage(null);
-
-            // Fetch the updated events for the current month
-            const currentDate = new Date();
-            const month = currentDate.toISOString().substring(0, 7);
-            const response2 = await fetch(`${backendUrl}/events/month/${month}`);
-            if (!response2.ok) {
-                throw new Error('Error fetching events');
-            }
         } catch (error) {
             setErrorMessage(`Error adding event: ${error}`);
         }
