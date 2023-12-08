@@ -67,9 +67,9 @@ app.get('/usersList', async function(req, res) {
 
 app.delete('/deleteUser', async (req,res) => {
     const userName = req.body.name;
-    const userEmail = req.body.email;
     try{
-        const userToDelete = await User.deleteOne(el => el.name === userName && el.email === userEmail);
+        console.log(userName);
+        const userToDelete = await User.deleteOne({"name": userName});
         res.json({status: "ok", users: userToDelete})
     }
     catch(err){
