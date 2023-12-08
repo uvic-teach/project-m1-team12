@@ -25,6 +25,9 @@ export default function Home() {
 
   return (
     <main className="w-screen h-screen p-8 md:px-24 md:py-12 bg-gray-900 text-white">
+      <button className='absolute top-1 right-1 h-10 w-20 rounded p-2 bg-green-700 border-green-900 hover:scale-[102%] hover:bg-green-600/90'  onClick={removeToken}>
+        LogOut
+      </button>
       <div className="grid md:grid-cols-2 gap-4 md:gap-8 h-full w-full">
         <HomeButton to='/menu' title='Menu' />
         <HomeButton to='/emergency' title='Emergency' />
@@ -34,6 +37,11 @@ export default function Home() {
     </main>
   )
 }
+
+const removeToken = () => {
+  localStorage.clear();
+  window.location.reload();
+};
 
 const HomeButton = ({to, title}: HomeButtonProps) => {
   // I removed the material UI components because it was slowing the load time to > 800ms
