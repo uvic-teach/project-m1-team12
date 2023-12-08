@@ -71,7 +71,13 @@ export default function Members() {
 
     }
 
-    const userRow = ({id, name, email}) => (
+    interface UserRowProps {
+        id: string;
+        name: string;
+        email: string;
+    }
+
+    const userRow: React.FC<UserRowProps> = ({id, name, email}) => (
         <div >
             <tr key={id} className="border-b dark:border-neutral-500">
                 <td className="whitespace-nowrap px-6 py-4 font-medium">{name}</td>
