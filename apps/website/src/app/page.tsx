@@ -53,7 +53,6 @@ export default function Home() {
           </ul>
         </div>
       ) : <h2 className='text-xl'>No new announcements</h2>}
-    <main className="w-screen h-screen p-8 md:px-24 md:py-12 bg-gray-900 text-white">
       <button className='absolute top-1 right-1 h-10 w-20 rounded p-2 bg-green-700 border-green-900 hover:scale-[102%] hover:bg-green-600/90'  onClick={removeToken}>
         LogOut
       </button>
