@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react' 
+import React, { useState } from 'react'
+import Link from "next/link";
 
 
 export default function Registration() {
@@ -81,6 +82,9 @@ export default function Registration() {
 						<input type="submit" value="Register" className='mx-auto w-48 rounded p-2 bg-green-700 border-green-900 hover:scale-[102%] hover:bg-green-600/90'/>
 					}
 			</form>
+			<Link href='/login' className='mx-auto w-48 rounded p-2 bg-green-700 border-green-900 hover:scale-[102%] hover:bg-green-600/90 text-center' >
+				Already Registered?
+			</Link>
 		</main>
     )
 }

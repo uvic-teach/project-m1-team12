@@ -135,3 +135,33 @@ app.post('/events', async (req: any, res: any) => {
     }
 });
 
+app.get('/events/day/:day', async (req: any, res: any) => {
+    const day = req.params.day;
+    console.log('received day!!!: ', day);
+    try {
+        const events = await getDayEvents(day);
+        res.json(events);
+    } catch (error) {
+        res.status(500).json({ error: error });
+    }
+});
+
+app.get('/events/month/:month', async (req: any, res: any) => {
+    const month = req.params.month;
+    try {
+        const events = await getMonthEvents(month);
+        res.json(events);
+    } catch (error) {
+        res.status(500).json({ error: error });
+    }
+});
+
+app.get('/events/week/:week', async (req: any, res: any) => {
+    const week = req.params.week;
+    try {
+        const events = await getWeekEvents(week);
+        res.json(events);
+    } catch (error) {
+        res.status(500).json({ error: error });
+    }
+});
