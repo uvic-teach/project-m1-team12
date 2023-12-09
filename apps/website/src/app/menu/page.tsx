@@ -1,5 +1,5 @@
 'use client'
-import { ExampleFetch } from "../components/ExampleFetch";
+import { ExampleFetch } from "../../components/ExampleFetch";
 
 export default function Menu() {
     return (

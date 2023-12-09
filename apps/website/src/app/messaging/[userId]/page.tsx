@@ -38,7 +38,7 @@ async function fetchHistory(channel: string, limit: number = 10) {
 
 const Messaging = ({ params }: { params: { userId: string } }) => {
     const { userId } = params;
-    const [clientId, setClientId] = useState("1");
+    const [clientId, setClientId] = useState(localStorage.getItem('userId') || '');
     const [messages, setMessages] = useState([]);
     const [channel, setChannel] = useState("");
     const [message, setMessage] = useState('');
@@ -57,9 +57,7 @@ const Messaging = ({ params }: { params: { userId: string } }) => {
         }
     };
 
-    // fetch channel if it exists, create channel otherwise
     useEffect(() => {
-        setClientId(localStorage.getItem('userId') || "1");
         if (clientId) {
             const createOrGetChannel = async () => {
                 try {
@@ -98,7 +96,6 @@ const Messaging = ({ params }: { params: { userId: string } }) => {
             await publishMessage(channel, message, clientId);
             setMessage('');
             messageHistory();
-            console.log('Message published');
         } catch (error) {
             console.error('Error publishing message:', error);
         }

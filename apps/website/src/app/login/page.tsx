@@ -30,7 +30,7 @@ export default function Login() {
 		
 		if (data.status == "ok") {
 			localStorage.setItem('username', data.name);
-			localStorage.setItem('userId', data?.id || 1);
+			localStorage.setItem('userId', data?.user?._id || 1);
 			localStorage.setItem('usertype', data?.usertype || 1); //remove or 1 later
 			window.location.href = '/'
 		}else{
@@ -40,7 +40,6 @@ export default function Login() {
 			alert('Login Unsuccessful. Please check your username or password and try again')
 		}
 		setButtonDisabled(false)
-		console.log(data)
 
 	}
 
